@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"blockchain/util"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
@@ -9,11 +10,9 @@ import (
 	"math/big"
 )
 
-const Difficulty = 12
-
 func (b *Block) GetTarget() []byte {
 	target := big.NewInt(1)
-	target.Lsh(target, uint(256-Difficulty))
+	target.Lsh(target, uint(256-util.Difficulty))
 	return target.Bytes()
 }
 
@@ -34,12 +33,21 @@ func (b *Block) GetBase4Nonce(nonce int64) []byte {
 		return nil
 	}
 
+	buf := []byte{}
+	tradeIDs := make([][]byte, 0)
+	for _, t := range b.TradeList {
+		tradeIDs = append(tradeIDs, t.ID)
+	}
+	for _, tradeID := range tradeIDs {
+		buf = append(buf, tradeID...)
+	}
+
 	data := bytes.Join([][]byte{
 		timeBuf.Bytes(),
 		b.PrevHash,
 		nonceBuf.Bytes(),
 		b.Target,
-		b.Data,
+		buf,
 	},
 		[]byte{},
 	)
