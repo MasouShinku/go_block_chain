@@ -15,12 +15,12 @@ type TradeInfo struct {
 }
 
 type InputInfo struct {
-	TradeID     string
-	OutID       int
-	FromAddress string
+	TradeID string
+	OutID   int
+	PubKey  string
 }
 
 type OutputInfo struct {
-	Num       int
-	ToAddress string
+	Num        int
+	HashPubKey string
 }

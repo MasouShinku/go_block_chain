@@ -3,21 +3,29 @@ package trade
 import (
 	"blockchain/util"
 	"bytes"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/gob"
+	"math/big"
 )
 
 // 首先定义转入转出结构体
 type TradeIn struct {
-	TradeID     []byte // 订单标识
-	OutID       int    // 订单的第几个Output
-	FromAddress []byte //转出者地址
+	TradeID   []byte // 订单标识
+	OutID     int    // 订单的第几个Output
+	PublicKey []byte // 公钥
+	Sign      []byte // 签名
+	//FromAddress  []byte //转出者地址
 	//OutName     string
+
 }
 
 type TradeOut struct {
-	Num       int    // 转出值
-	ToAddress []byte // 接受者地址
+	Num int // 转出值
+	//ToAddress     []byte // 接受者地址
+	HashPublicKey []byte // 公钥哈希
 	//InName    string
 }
 
@@ -50,7 +58,7 @@ func (t *Trade) SetID() {
 
 // 创建初始订单，将InitNum商品转入用户
 func FirstTrade(toaddress []byte) *Trade {
-	In := TradeIn{[]byte{}, -1, []byte{}}
+	In := TradeIn{[]byte{}, -1, []byte{}, nil}
 	Out := TradeOut{util.InitNum, toaddress}
 	tx := Trade{[]byte("The First Trade!"), []TradeIn{In}, []TradeOut{Out}}
 	return &tx
@@ -63,10 +71,87 @@ func (t *Trade) IsFirstTrade() bool {
 
 // 判断源地址是否正确
 func (in *TradeIn) IsFromAddressRight(address []byte) bool {
-	return bytes.Equal(in.FromAddress, address)
+	return bytes.Equal(in.PublicKey, address)
 }
 
 // 判断目标地址是否正确
 func (out *TradeOut) IsToAddressRight(address []byte) bool {
-	return bytes.Equal(out.ToAddress, address)
+	return bytes.Equal(out.HashPublicKey, util.PublicKeyHash(address))
+}
+
+// 构造签名
+func Sign(msg []byte, privKey ecdsa.PrivateKey) []byte {
+	r, s, err := ecdsa.Sign(rand.Reader, &privKey, msg)
+	util.Err(err)
+	signature := append(r.Bytes(), s.Bytes()...)
+	return signature
+}
+
+// 验证签名是否合法
+func Verify(msg []byte, pubkey []byte, signature []byte) bool {
+	curve := elliptic.P256()
+	r := big.Int{}
+	s := big.Int{}
+	sigLen := len(signature)
+	r.SetBytes(signature[:(sigLen / 2)])
+	s.SetBytes(signature[(sigLen / 2):])
+
+	x := big.Int{}
+	y := big.Int{}
+	keyLen := len(pubkey)
+	x.SetBytes(pubkey[:(keyLen / 2)])
+	y.SetBytes(pubkey[(keyLen / 2):])
+
+	rawPubKey := ecdsa.PublicKey{curve, &x, &y}
+	return ecdsa.Verify(&rawPubKey, msg, &r, &s)
+}
+
+// 描述交易信息
+func (t *Trade) PlainCopy() Trade {
+	var inputs []TradeIn
+	var outputs []TradeOut
+
+	for _, tin := range t.Inputs {
+		inputs = append(inputs, TradeIn{tin.TradeID, tin.OutID, nil, nil})
+	}
+
+	for _, tout := range t.Outputs {
+		outputs = append(outputs, TradeOut{tout.Num, tout.HashPublicKey})
+	}
+
+	tradeCopy := Trade{t.ID, inputs, outputs}
+
+	return tradeCopy
+}
+
+// 对交易信息进行签名
+func (t *Trade) Sign(privKey ecdsa.PrivateKey) {
+	if t.IsFirstTrade() {
+		return
+	}
+	for i, input := range t.Inputs {
+
+		tradeCopy := t.PlainCopy()
+		tradeCopy.Inputs[i].PublicKey = input.PublicKey
+		plainhash := tradeCopy.GetTradeHash()
+		//plainhash := t.PlainHash(idx, input.PubKey) // This is because we want to sign the inputs seperately!
+
+		signature := Sign(plainhash, privKey)
+		t.Inputs[i].Sign = signature
+	}
+}
+
+// 验证整个交易是否合法
+func (t *Trade) Verify() bool {
+	for i, input := range t.Inputs {
+
+		tradeCopy := t.PlainCopy()
+		tradeCopy.Inputs[i].PublicKey = input.PublicKey
+		plainhash := tradeCopy.GetTradeHash()
+
+		if !Verify(plainhash, input.PublicKey, input.Sign) {
+			return false
+		}
+	}
+	return true
 }

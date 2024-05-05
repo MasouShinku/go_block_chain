@@ -12,7 +12,7 @@ import (
 type Service struct{}
 
 func (s *Service) CreateBlockChain(address string) {
-	newChain := blockchain.InitBlockChain([]byte(address))
+	newChain := blockchain.InitBlockChain(util.AddressToPublicHash([]byte(address)))
 	newChain.Database.Close()
 	fmt.Println("Finished creating blockchain, and the owner is: ", address)
 }
@@ -21,7 +21,9 @@ func (s *Service) Balance(address string) {
 	chain := blockchain.ContinueBlockChain()
 	defer chain.Database.Close()
 
-	balance, _ := chain.FindUTXOs([]byte(address))
+	wallet := wallet.LoadWallet(address)
+
+	balance, _ := chain.FindUTXOs(wallet.PublicKey)
 	fmt.Printf("Address:%s, Balance:%d \n", address, balance)
 }
 
@@ -59,15 +61,15 @@ func (s *Service) GetBlockChainInfo() []BlockInfo {
 				}
 				for i, input := range trade.Inputs {
 					tInfo.Inputs[i] = InputInfo{
-						TradeID:     hex.EncodeToString(input.TradeID),
-						OutID:       input.OutID,
-						FromAddress: string(input.FromAddress),
+						TradeID: hex.EncodeToString(input.TradeID),
+						OutID:   input.OutID,
+						PubKey:  string(input.PublicKey),
 					}
 				}
 				for i, output := range trade.Outputs {
 					tInfo.Outputs[i] = OutputInfo{
-						Num:       output.Num,
-						ToAddress: string(output.ToAddress),
+						Num:        output.Num,
+						HashPubKey: string(output.HashPublicKey),
 					}
 				}
 				tradesInfo = append(tradesInfo, tInfo)
@@ -85,63 +87,19 @@ func (s *Service) GetBlockChainInfo() []BlockInfo {
 	}
 
 	return blocks
-
-	//var buffer bytes.Buffer
-	//
-	//chain := blockchain.ContinueBlockChain()
-	//defer chain.Database.Close()
-	//iterator := chain.InitIterator()
-	//ogprevhash := chain.GetOGPrevHash()
-	//
-	//for {
-	//	block := iterator.Next()
-	//
-	//	buffer.WriteString("--------------------------------------------------------------------------------------------------------------\n")
-	//	buffer.WriteString(fmt.Sprintf("Timestamp:%s\n", block.Time.Format("2006-01-02 15:04:05")))
-	//	buffer.WriteString(fmt.Sprintf("Previous hash:%x\n", block.PrevHash))
-	//	buffer.WriteString(fmt.Sprintf("Trades:%v\n", block.TradeList))
-	//	buffer.WriteString(fmt.Sprintf("Hash:%x\n", block.Hash))
-	//	buffer.WriteString(fmt.Sprintf("Pow: %s\n", strconv.FormatBool(block.ValidatePoW())))
-	//	buffer.WriteString("--------------------------------------------------------------------------------------------------------------\n")
-	//	buffer.WriteString("\n")
-	//
-	//	if bytes.Equal(block.PrevHash, ogprevhash) {
-	//		break
-	//	}
-	//}
-	//
-	//return buffer.String()
-
-	//chain := blockchain.ContinueBlockChain()
-	//defer chain.Database.Close()
-	//iterator := chain.InitIterator()
-	//ogprevhash := chain.GetOGPrevHash()
-	//for {
-	//	block := iterator.Next()
-	//	fmt.Println("--------------------------------------------------------------------------------------------------------------")
-	//	fmt.Printf("Timestamp:%d\n", block.Time.Format("2006-01-02 15:04:05"))
-	//	fmt.Printf("Previous hash:%x\n", block.PrevHash)
-	//	fmt.Printf("Trades:%v\n", block.TradeList)
-	//	fmt.Printf("hash:%x\n", block.Hash)
-	//	fmt.Printf("Pow: %s\n", strconv.FormatBool(block.ValidatePoW()))
-	//	fmt.Println("--------------------------------------------------------------------------------------------------------------")
-	//	fmt.Println()
-	//	if bytes.Equal(block.PrevHash, ogprevhash) {
-	//		break
-	//	}
-	//}
 }
 
 func (s *Service) Send(from, to string, amount int) {
 	chain := blockchain.ContinueBlockChain()
 	defer chain.Database.Close()
-	tx, ok := chain.CreateTrade([]byte(from), []byte(to), amount)
+	fromWallet := wallet.LoadWallet(from)
+	trade, ok := chain.CreateTrade(fromWallet.PublicKey, util.AddressToPublicHash([]byte(to)), amount, fromWallet.PrivateKey)
 	if !ok {
 		fmt.Println("Failed to create transaction")
 		return
 	}
 	tp := blockchain.CreateTradePool()
-	tp.AddTrade(tx)
+	tp.AddTrade(trade)
 	tp.SaveFile()
 	fmt.Println("Success!")
 }

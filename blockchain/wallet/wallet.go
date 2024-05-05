@@ -5,11 +5,7 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"crypto/rand"
-	"crypto/sha256"
 	"errors"
-	"github.com/mr-tron/base58"
-	"golang.org/x/crypto/ripemd160"
 	"io/ioutil"
 	"math/big"
 )
@@ -20,73 +16,17 @@ type Wallet struct {
 	PublicKey  []byte
 }
 
-// 生成密钥对
-func GenNeKeyPair() (ecdsa.PrivateKey, []byte) {
-	curve := elliptic.P256()
-	privateKey, err := ecdsa.GenerateKey(curve, rand.Reader)
-	util.Err(err)
-	// 公钥为点坐标，需要拼接起来保存
-	publicKey := append(privateKey.PublicKey.X.Bytes(), privateKey.PublicKey.Y.Bytes()...)
-	return *privateKey, publicKey
-}
-
 // 生成钱包
 func NewWallet() *Wallet {
-	privateKey, publicKey := GenNeKeyPair()
+	privateKey, publicKey := util.GenNeKeyPair()
 	wallet := Wallet{privateKey, publicKey}
 	return &wallet
 }
 
-// hash公钥
-func PublicKeyHash(publicKey []byte) []byte {
-	hashedPublicKey := sha256.Sum256(publicKey)
-	hash := ripemd160.New()
-	_, err := hash.Write(hashedPublicKey[:])
-	util.Err(err)
-	publicRipeMd := hash.Sum(nil)
-	return publicRipeMd
-}
-
-// 检查位生成函数
-func CheckSum(ripeMdHash []byte) []byte {
-	firstHash := sha256.Sum256(ripeMdHash)
-	secondHash := sha256.Sum256(firstHash[:])
-	return secondHash[:util.ChecksumLength]
-}
-
-// base256转base58
-func Base58Encode(input []byte) []byte {
-	encode := base58.Encode(input)
-	return []byte(encode)
-}
-
-// base58转base256
-func Base58Decode(input []byte) []byte {
-	decode, err := base58.Decode(string(input[:]))
-	util.Err(err)
-	return decode
-}
-
-// 从公钥哈希生成钱包地址
-func PublicHashToAddress(pubKeyHash []byte) []byte {
-	networkVersionedHash := append([]byte{util.NetworkVersion}, pubKeyHash...)
-	checkSum := CheckSum(networkVersionedHash)
-	finalHash := append(networkVersionedHash, checkSum...)
-	address := Base58Encode(finalHash)
-	return address
-}
-
-// 从钱包地址转公钥哈希
-func AddressToPublicHash(address []byte) []byte {
-	pubKeyHash := Base58Decode(address)
-	pubKeyHash = pubKeyHash[1 : len(pubKeyHash)-util.ChecksumLength]
-	return pubKeyHash
-}
-
 // 获取钱包地址
 func (w *Wallet) Address() []byte {
-	publicHash := PublicKeyHash(w.PublicKey)
-	return PublicHashToAddress(publicHash)
+	publicHash := util.PublicKeyHash(w.PublicKey)
+	return util.PublicHashToAddress(publicHash)
 }
 
 // 保存钱包

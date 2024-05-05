@@ -4,11 +4,11 @@ import (
 	"blockchain/trade"
 	"blockchain/util"
 	"bytes"
+	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/gob"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"github.com/dgraph-io/badger"
 	"io/ioutil"
@@ -422,34 +422,32 @@ Work:
 }
 
 // 创建交易
-func (blockChain *BlockChain) CreateTrade(from, to []byte, amount int) (*trade.Trade, bool) {
-	util.Err(errors.New(fmt.Sprintf("from is : %s, to is : %s", from, to)))
+func (blockChain *BlockChain) CreateTrade(fromPublicKey, toHashPublicKey []byte, amount int, privateKey ecdsa.PrivateKey) (*trade.Trade, bool) {
+	//util.Err(errors.New(fmt.Sprintf("from is : %s, to is : %s", from, to)))
 
 	var inputs []trade.TradeIn
 	var outputs []trade.TradeOut
 
-	acc, validOutputs := blockChain.FindSpendableOutputs(from, amount)
+	acc, validOutputs := blockChain.FindSpendableOutputs(fromPublicKey, amount)
 	if acc < amount {
 		fmt.Println("余额不足!")
 		return &trade.Trade{}, false
 	}
 	for tradeID, outID := range validOutputs {
-		txID, err := hex.DecodeString(tradeID)
-		if err != nil {
-			return nil, false
-		}
-		input := trade.TradeIn{txID, outID, from}
+		tID, err := hex.DecodeString(tradeID)
+		util.Err(err)
+		input := trade.TradeIn{tID, outID, fromPublicKey, nil}
 		inputs = append(inputs, input)
 	}
 
-	outputs = append(outputs, trade.TradeOut{amount, to})
+	outputs = append(outputs, trade.TradeOut{amount, toHashPublicKey})
 	if acc > amount {
-		outputs = append(outputs, trade.TradeOut{acc - amount, from})
+		outputs = append(outputs, trade.TradeOut{acc - amount, util.PublicKeyHash(fromPublicKey)})
 	}
-	tx := trade.Trade{nil, inputs, outputs}
-	tx.SetID()
-
-	return &tx, true
+	t := trade.Trade{nil, inputs, outputs}
+	t.SetID()
+	t.Sign(privateKey)
+	return &t, true
 }
 
 //// 暂时预留一个挖矿接口
