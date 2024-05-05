@@ -2,6 +2,8 @@ package main
 
 import (
 	"blockchain/blockchain"
+	"blockchain/util"
+	"blockchain/wallet"
 	"bytes"
 	"encoding/hex"
 	"fmt"
@@ -149,4 +151,72 @@ func (s *Service) Mine() {
 	defer chain.Database.Close()
 	chain.Mine()
 	fmt.Println("Finish Mining")
+}
+
+func (s *Service) CreateWallet(refname string) {
+	newWallet := wallet.NewWallet()
+
+	newWallet.SaveWallet()
+	refList := wallet.LoadRefList()
+	refList.SetRef(string(newWallet.Address()), refname)
+	refList.Save()
+	fmt.Println("Succeed in creating wallet.")
+}
+
+func (s *Service) WalletInfoRefName(refname string) {
+	refList := wallet.LoadRefList()
+	address, err := refList.FindRef(refname)
+	util.Err(err)
+	s.WalletInfo(address)
+}
+
+func (s *Service) WalletInfo(address string) {
+	wlt := wallet.LoadWallet(address)
+	refList := wallet.LoadRefList()
+	fmt.Printf("Wallet address:%x\n", wlt.Address())
+	fmt.Printf("Public Key:%x\n", wlt.PublicKey)
+	fmt.Printf("Reference Name:%s\n", (*refList)[address])
+}
+
+func (s *Service) UpdateWallets() {
+	refList := wallet.LoadRefList()
+	refList.Update()
+	refList.Save()
+	fmt.Println("Succeed in updating wallets.")
+}
+
+func (s *Service) WalletsList() {
+	refList := wallet.LoadRefList()
+	for address, _ := range *refList {
+		wlt := wallet.LoadWallet(address)
+		fmt.Println("--------------------------------------------------------------------------------------------------------------")
+		fmt.Printf("Wallet address:%s\n", address)
+		fmt.Printf("Public Key:%x\n", wlt.PublicKey)
+		fmt.Printf("Reference Name:%s\n", (*refList)[address])
+		fmt.Println("--------------------------------------------------------------------------------------------------------------")
+		fmt.Println()
+	}
+}
+
+func (s *Service) SendRefName(fromRefname, toRefname string, amount int) {
+	refList := wallet.LoadRefList()
+	fromAddress, err := refList.FindRef(fromRefname)
+	util.Err(err)
+	toAddress, err := refList.FindRef(toRefname)
+	util.Err(err)
+	s.Send(fromAddress, toAddress, amount)
+}
+
+func (s *Service) CreateBlockChainRefName(refname string) {
+	refList := wallet.LoadRefList()
+	address, err := refList.FindRef(refname)
+	util.Err(err)
+	s.CreateBlockChain(address)
+}
+
+func (s *Service) BalanceRefName(refname string) {
+	refList := wallet.LoadRefList()
+	address, err := refList.FindRef(refname)
+	util.Err(err)
+	s.Balance(address)
 }

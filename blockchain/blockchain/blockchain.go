@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"encoding/gob"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/dgraph-io/badger"
 	"io/ioutil"
@@ -422,7 +423,7 @@ Work:
 
 // 创建交易
 func (blockChain *BlockChain) CreateTrade(from, to []byte, amount int) (*trade.Trade, bool) {
-	util.Errorln(fmt.Sprintf("from is : %s, to is : %s", from, to))
+	util.Err(errors.New(fmt.Sprintf("from is : %s, to is : %s", from, to)))
 
 	var inputs []trade.TradeIn
 	var outputs []trade.TradeOut

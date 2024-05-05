@@ -8,11 +8,15 @@ import (
 
 // blockchain相关
 const (
-	Difficulty = 12
-	InitNum    = 1000
-	TradePool  = "./files/tradePool.data"
-	BCPath     = "./files/blocks"
-	BCFile     = "./files/blocks/MANIFEST"
+	Difficulty     = 12
+	InitNum        = 1000
+	TradePool      = "./files/tradePool.data"
+	BCPath         = "./files/blocks"
+	BCFile         = "./files/blocks/MANIFEST"
+	ChecksumLength = 4
+	NetworkVersion = byte(0x00)
+	Wallets        = "./files/wallets/"
+	WalletsRefList = "./files/ref_list/"
 )
 
 // 日志相关
@@ -32,8 +36,8 @@ var (
 
 // 暴露log方法
 var (
-	Errorln = errorLog.Println
-	Infoln  = infoLog.Println
+	errorln = errorLog.Println
+	infoln  = infoLog.Println
 )
 
 func FileExists(fileAddr string) bool {
@@ -41,4 +45,14 @@ func FileExists(fileAddr string) bool {
 		return false
 	}
 	return true
+}
+
+func Err(err error) {
+	if err != nil {
+		errorln(err)
+	}
+}
+
+func Info(s string) {
+	infoln(s)
 }
