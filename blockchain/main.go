@@ -1,9 +1,5 @@
 package main
 
-import (
-	"blockchain/service"
-)
-
 //// Block 区块结构体
 //type Block struct{
 //	Time int		// 时间戳
@@ -116,16 +112,16 @@ func main() {
 	//property, _ = chain.FindUTXOs([]byte("Exia"))
 	//fmt.Println("Balance of Exia: ", property)
 
-	service := service.Service{}
-	service.CreateBlockChain("LeoCao")
-	service.Balance("LeoCao")
-	service.GetBlockChainInfo()
-	service.Send("Leo", "Cao", 100)
-	service.Send("LeoCao", "Krad", 100)
-	service.Balance("LeoCao")
-	service.Mine()
-	service.Balance("LeoCao")
-	service.Balance("Krad")
-	service.GetBlockChainInfo()
+	//service := Service{}
+	//service.CreateBlockChain("LeoCao")
+	//service.Balance("LeoCao")
+	//service.GetBlockChainInfo()
+	//service.Send("Leo", "Cao", 100)
+	//service.Send("LeoCao", "Krad", 100)
+	//service.Balance("LeoCao")
+	//service.Mine()
+	//service.Balance("LeoCao")
+	//service.Balance("Krad")
+	//service.GetBlockChainInfo()
 
 }

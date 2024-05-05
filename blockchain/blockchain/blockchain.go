@@ -329,24 +329,6 @@ func (blockChain *BlockChain) AddBlock(newBlock *Block) {
 	//blockChain.BlockList = append(blockChain.BlockList, newBlock)
 }
 
-//// 寻找可用交易信息
-//func (blockChain *BlockChain) FindValidTrades(address []byte) {
-//	// 存放可用交易信息
-//	var unSpentTrades []trade.Trade
-//	// 存放已使用交易信息
-//	spentTrades := make(map[string][]int)
-//	// 开始遍历交易
-//	for i := len(blockChain.BlockList) - 1; i > 0; i-- {
-//		block := blockChain.BlockList[i]
-//		for _, trade := range block.TradeList {
-//			tradeID := hex.EncodeToString(trade.ID)
-//
-//		IterOutputs:
-//		}
-//
-//	}
-//}
-
 // 寻找可用交易信息
 func (blockChain *BlockChain) FindUnspentTrades(address []byte) []trade.Trade {
 
@@ -392,48 +374,6 @@ all:
 	}
 	return unSpentTrades
 
-	//// 存放可用交易信息
-	//var unSpentTrades []trade.Trade
-	//// 存放已使用交易信息
-	//spentTrades := make(map[string][]int)
-	//// 开始遍历交易
-	//
-	//for i := len(blockChain.BlockList) - 1; i >= 0; i-- {
-	//	block := blockChain.BlockList[i]
-	//	for _, trade := range block.TradeList {
-	//		tradeID := hex.EncodeToString(trade.ID)
-	//
-	//	IterOutputs:
-	//
-	//		for outId, out := range trade.Outputs {
-	//			// 若tradeID已经spent则跳过
-	//			if spentTrades[tradeID] != nil {
-	//				for _, spentOut := range spentTrades[tradeID] {
-	//					if spentOut == outId {
-	//						continue IterOutputs
-	//					}
-	//				}
-	//			}
-	//			// 否则查看地址，当正确则为查找的信息
-	//			if out.IsToAddressRight(address) {
-	//				unSpentTrades = append(unSpentTrades, *trade)
-	//			}
-	//		}
-	//
-	//		// 判断是不是初始交易
-	//		// 不是的话判断in是否包含目标地址，有的话将out信息加入spentTrades
-	//		if !trade.IsFirstTrade() {
-	//			for _, in := range trade.Inputs {
-	//				if in.IsFromAddressRight(address) {
-	//					inTxID := hex.EncodeToString(in.TradeID)
-	//					spentTrades[inTxID] = append(spentTrades[inTxID], in.OutID)
-	//				}
-	//			}
-	//		}
-	//	}
-	//
-	//}
-	//return unSpentTrades
 }
 
 // 找到一个地址的全部UTXO
@@ -482,6 +422,8 @@ Work:
 
 // 创建交易
 func (blockChain *BlockChain) CreateTrade(from, to []byte, amount int) (*trade.Trade, bool) {
+	util.Errorln(fmt.Sprintf("from is : %s, to is : %s", from, to))
+
 	var inputs []trade.TradeIn
 	var outputs []trade.TradeOut
 

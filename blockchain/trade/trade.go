@@ -12,11 +12,13 @@ type TradeIn struct {
 	TradeID     []byte // 订单标识
 	OutID       int    // 订单的第几个Output
 	FromAddress []byte //转出者地址
+	//OutName     string
 }
 
 type TradeOut struct {
 	Num       int    // 转出值
 	ToAddress []byte // 接受者地址
+	//InName    string
 }
 
 // 交易结构体
