@@ -14,25 +14,8 @@ func loadBlockChain() *Service {
 }
 
 func main() {
-	//
-	//s := loadBlockChain()
-	//s.Send("shinku", "shizuka", 100)
-	//s.Mine()
 
 	s := loadBlockChain()
-	//s.CreateBlockChain("122BZqDc5vPcgAG6DED8TcCHKQcosQujSu")
-	//s.WalletInfoRefName("shinku")
-	//s.CreateWallet("marco")
-
-	//s.WalletsList()
-	//s.Balance("122BZqDc5vPcgAG6DED8TcCHKQcosQujSu")
-	//s.Balance("1MQ5dfua1bFmfAUqY3cZHuxeHhBPV2jGao")
-	//s.UpdateWallets()
-	//s.WalletsList()
-	//s.Send("122BZqDc5vPcgAG6DED8TcCHKQcosQujSu", "1MQ5dfua1bFmfAUqY3cZHuxeHhBPV2jGao", 10)
-	//s.Mine()
-
-	//s.CreateBlockChain("1K2FNmJtHZZYKrJFSYfjAfXzGjmj5YdUPk")
 	r := gin.Default()
 
 	r.GET("/create_blockchain/:address", func(c *gin.Context) {

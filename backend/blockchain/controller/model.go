@@ -1,11 +1,11 @@
 package main
 
 type BlockInfo struct {
-	Timestamp    string      `json:"timestamp"`
-	PreviousHash string      `json:"previous_hash"`
-	Trades       []TradeInfo `json:"trades"` // 假设Trade是一个已定义的结构体
-	Hash         string      `json:"hash"`
-	Pow          bool        `json:"pow"`
+	Timestamp    string
+	PreviousHash string
+	Trades       []TradeInfo
+	Hash         string
+	Pow          bool
 }
 
 type TradeInfo struct {
