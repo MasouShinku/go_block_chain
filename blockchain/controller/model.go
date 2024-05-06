@@ -24,3 +24,40 @@ type OutputInfo struct {
 	Num        int
 	HashPubKey string
 }
+
+type BlockchainCreationResult struct {
+	Success bool
+	Message string
+}
+
+type BalanceResult struct {
+	Address string
+	Balance int
+}
+
+type TradeResult struct {
+	Success bool
+	Message string
+}
+
+type MiningResult struct {
+	Message string
+}
+
+type CreateWalletResult struct {
+	Message string
+}
+
+type WalletInfoResult struct {
+	Address       string
+	PublicKey     string
+	ReferenceName string
+}
+
+type UpdateWalletsResult struct {
+	Message string
+}
+
+type WalletsListResult struct {
+	Wallets []WalletInfoResult
+}
