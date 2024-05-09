@@ -5,17 +5,19 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
-	"fmt"
+	"errors"
 	"math"
 	"math/big"
 )
 
+// GetTarget 获取区块的目标值
 func (b *Block) GetTarget() []byte {
 	target := big.NewInt(1)
 	target.Lsh(target, uint(256-util.Difficulty))
 	return target.Bytes()
 }
 
+// GetBase4Nonce 根据给定nonce生成基础数据用于计算哈希
 func (b *Block) GetBase4Nonce(nonce int64) []byte {
 	// time和nonce应当先转换为字节切片,否则无法join
 	var timeBuf bytes.Buffer
@@ -23,13 +25,13 @@ func (b *Block) GetBase4Nonce(nonce int64) []byte {
 
 	err := binary.Write(&timeBuf, binary.BigEndian, b.Time.Unix())
 	if err != nil {
-		fmt.Println("Error writing time:", err)
+		util.Err(errors.New("时间写入失败"))
 		return nil
 	}
 
 	err = binary.Write(&nonceBuf, binary.BigEndian, nonce)
 	if err != nil {
-		fmt.Println("Error writing nonce:", err)
+		util.Err(errors.New("nonce写入失败"))
 		return nil
 	}
 
@@ -54,6 +56,7 @@ func (b *Block) GetBase4Nonce(nonce int64) []byte {
 	return data
 }
 
+// FindNonce 寻找有效nonce值
 func (b *Block) FindNonce() int64 {
 	var intHash big.Int
 	var intTarget big.Int
@@ -75,6 +78,7 @@ func (b *Block) FindNonce() int64 {
 	return nonce
 }
 
+// ValidatePoW 验证PoW
 func (b *Block) ValidatePoW() bool {
 	var intHash big.Int
 	var intTarget big.Int

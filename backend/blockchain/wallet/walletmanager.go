@@ -11,16 +11,16 @@ import (
 	"strings"
 )
 
-// 记录钱包信息
+// RefList 记录钱包信息
 // 从地址到别名的映射
 type RefList map[string]string
 
-// 为钱包设定别名
+// SetRef 为钱包设定别名
 func (r *RefList) SetRef(address, refname string) {
 	(*r)[address] = refname
 }
 
-// 通过别名获取钱包
+// FindRef 通过别名获取钱包
 func (r *RefList) FindRef(refname string) (string, error) {
 	temp := ""
 	for key, val := range *r {
@@ -36,7 +36,7 @@ func (r *RefList) FindRef(refname string) (string, error) {
 	return temp, nil
 }
 
-// 保存RefList
+// Save 保存RefList
 func (r *RefList) Save() {
 	filename := util.WalletsRefList + "ref_list"
 	var content bytes.Buffer
@@ -47,7 +47,7 @@ func (r *RefList) Save() {
 	util.Err(err)
 }
 
-// 扫描所有保存的钱包文件
+// Update 扫描所有保存的钱包文件
 func (r *RefList) Update() {
 	err := filepath.Walk(util.Wallets, func(path string, f os.FileInfo, err error) error {
 		if f == nil {
@@ -68,7 +68,7 @@ func (r *RefList) Update() {
 	util.Err(err)
 }
 
-// 加载RefList信息
+// LoadRefList 加载RefList信息
 func LoadRefList() *RefList {
 	filename := util.WalletsRefList + "ref_list"
 	var reflist RefList

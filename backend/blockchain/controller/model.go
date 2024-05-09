@@ -9,9 +9,10 @@ type BlockInfo struct {
 }
 
 type TradeInfo struct {
-	ID      string
-	Inputs  []InputInfo
-	Outputs []OutputInfo
+	ID          string
+	Inputs      []InputInfo
+	Outputs     []OutputInfo
+	Description string
 }
 
 type InputInfo struct {
@@ -52,6 +53,7 @@ type WalletInfoResult struct {
 	Address       string
 	PublicKey     string
 	ReferenceName string
+	Identity      string
 }
 
 type UpdateWalletsResult struct {
@@ -60,4 +62,34 @@ type UpdateWalletsResult struct {
 
 type WalletsListResult struct {
 	Wallets []WalletInfoResult
+}
+
+type getAllBalanceResult struct {
+	A_dealer_balance   string
+	B_dealer_balance   string
+	C_dealer_balance   string
+	Raw_balance        string
+	A_producer_balance string
+	User_balance       string
+}
+
+type TraceTrade struct {
+	Time        string
+	Description string
+}
+
+type BuyResult struct {
+	Success     bool
+	Message     string
+	TraceTrades []TraceTrade
+}
+
+type ProducerBuyResult struct {
+	Success bool
+	Message string
+}
+
+type DealerBuyResult struct {
+	Success bool
+	Message string
 }

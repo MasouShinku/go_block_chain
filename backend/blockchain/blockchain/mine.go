@@ -5,7 +5,6 @@ import (
 	"blockchain/util"
 	"bytes"
 	"encoding/hex"
-	"fmt"
 )
 
 func isInputRight(trades []trade.Trade, in trade.TradeIn) (bool, int) {
@@ -72,7 +71,7 @@ func (blockchain *BlockChain) Mine() {
 		util.Err(err)
 		return
 	} else {
-		fmt.Println("Block has invalid nonce.")
+		util.Info("区块nonce无效！")
 		return
 	}
 }
